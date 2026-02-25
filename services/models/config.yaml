@@ -1,0 +1,25 @@
+paths:
+  usda_dir: "database/usda"
+  demand_file: "database/demand/demand.csv"
+  output_dir: "outputs"
+
+openai:
+  model: "gpt-5.2"
+  max_output_tokens: 1200
+
+
+schema:
+  usda:
+    date_columns: ["date", "report_date", "week_ending"]
+    product_column_candidates: ["product", "commodity", "item", "category", "name"]
+    region_column_candidates: ["state", "region", "market"]
+    numeric_columns:
+      production: "float"
+      stocks: "float"
+      price: "float"
+      imports: "float"
+  demand:
+    date_columns: ["date", "week"]
+    product_column: "product"
+    demand_column: "demand"
+    region_column: "region"
