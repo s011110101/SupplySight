@@ -7,7 +7,9 @@ ROOT = Path(__file__).resolve().parents[1]
 PROCESSED = ROOT / "database" / "processed"
 
 WEATHER = PROCESSED / "weather_daily_historical.csv"
-OUTPUT = PROCESSED / "daily_training_data.csv"
+OIL = PROCESSED / "oil_price_daily.csv"
+
+OUTPUT = PROCESSED / "daily_training_raw_data.csv"
 
 
 def load_weather():
@@ -21,14 +23,29 @@ def load_weather():
 
     return df
 
+def load_oil():
+
+    if not OIL.exists():
+        raise FileNotFoundError(f"Missing oil dataset: {OIL}")
+
+    df = pd.read_csv(OIL)
+
+    df["DATE"] = pd.to_datetime(df["DATE"])
+
+    return df
+
 
 def main():
 
     print("Building daily training dataset...")
 
     weather = load_weather()
+    oil = load_oil()
 
-    combined = weather.sort_values("DATE").reset_index(drop=True)
+    combined = weather.merge(oil, on="DATE", how="left")
+    combined["oil_price"] = combined["oil_price"].ffill()
+
+    combined = combined.sort_values("DATE").reset_index(drop=True)
 
     PROCESSED.mkdir(parents=True, exist_ok=True)
 
