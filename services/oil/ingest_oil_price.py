@@ -1,41 +1,33 @@
-import requests
-import pandas as pd
-from pathlib import Path
+#!/usr/bin/env python3
 
-API_KEY = "bFF7I0Ow8Rc8d9yVPPdJaAAd68nEOSJkHovzP4GJ"
+from pathlib import Path
+import os
+from services.oil.client import fetch_oil_price
+
 
 ROOT = Path(__file__).resolve().parents[2]
 PROCESSED = ROOT / "database" / "processed"
 
-url = (
-    "https://api.eia.gov/v2/petroleum/pri/spt/data/"
-    f"?api_key={API_KEY}"
-    "&frequency=daily"
-    "&data[0]=value"
-    "&start=2018-01-01"
-)
 
-r = requests.get(url).json()
-data = r["response"]["data"]
+def main():
 
-df = pd.DataFrame(data)
+    api_key = os.getenv("EIA_API_KEY")
 
-df = df[df["series-description"] ==
-        "U.S. Gulf Coast Ultra-Low Sulfur No 2 Diesel Spot Price (Dollars per Gallon)"]
+    if not api_key:
+        raise RuntimeError("Missing EIA_API_KEY environment variable")
 
-df = df.rename(columns={
-    "period": "DATE",
-    "value": "oil_price"
-})
+    print("Fetching oil price data...")
 
-df["DATE"] = pd.to_datetime(df["DATE"])
+    df = fetch_oil_price(api_key)
 
-df = df[["DATE", "oil_price"]]
+    PROCESSED.mkdir(parents=True, exist_ok=True)
 
-df = df.sort_values("DATE")
+    output = PROCESSED / "oil_price_daily.csv"
 
-PROCESSED.mkdir(parents=True, exist_ok=True)
+    df.to_csv(output, index=False)
 
-df.to_csv(PROCESSED / "oil_price_daily.csv", index=False)
+    print(f"Saved {len(df)} rows → {output}")
 
-print("Saved oil_price_daily.csv")
+
+if __name__ == "__main__":
+    main()
