@@ -88,7 +88,7 @@
 4. oil_price_daily.csv
     > https://www.eia.gov/opendata/
     
-    - DATE: <YYYY>-<MM>-<DD>
+    - DATE: \<YYYY\>\-\<MM\>\-\<DD\>
     - oil_price: U.S. Gulf Coast Ultra-Low Sulfur No 2 Diesel Spot Price (float)
 
 5. news
