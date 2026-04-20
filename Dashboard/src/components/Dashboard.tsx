@@ -16,28 +16,7 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-slate-900 mb-1">Risk Dashboard</h1>
-          <p className="text-slate-600">Monitor and forecast supply chain risks across your product portfolio</p>
-          {error && (
-            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
-              {error}
-            </div>
-          )}
-          {data?.meta?.placeholderReason === 'database_unavailable' && data.meta.dbError && (
-            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
-              <span className="font-medium">Unable to connect to database.</span>
-              <span className="block text-xs mt-1 font-mono break-all">{data.meta.dbError}</span>
-            </div>
-          )}
-          {data?.meta && (
-            <p className="text-slate-500 text-xs mt-2">
-              Data as of: {data.meta.asOf ?? '—'} · Generated: {data.meta.generatedAt}
-            </p>
-          )}
-        </div>
-
+      <div className="flex items-start gap-4">
         {/* Product selector */}
         <div className="relative mt-1">
           <button
@@ -66,6 +45,27 @@ export function Dashboard() {
                 </button>
               ))}
             </div>
+          )}
+        </div>
+
+        <div>
+          <h1 className="text-slate-900 mb-1">Risk Dashboard</h1>
+          <p className="text-slate-600">Monitor and forecast supply chain risks across your product portfolio</p>
+          {error && (
+            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+              {error}
+            </div>
+          )}
+          {data?.meta?.placeholderReason === 'database_unavailable' && data.meta.dbError && (
+            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+              <span className="font-medium">Unable to connect to database.</span>
+              <span className="block text-xs mt-1 font-mono break-all">{data.meta.dbError}</span>
+            </div>
+          )}
+          {data?.meta && (
+            <p className="text-slate-500 text-xs mt-2">
+              Data as of: {data.meta.asOf ?? '—'} · Generated: {data.meta.generatedAt}
+            </p>
           )}
         </div>
       </div>
