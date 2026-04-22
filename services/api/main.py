@@ -194,6 +194,72 @@ def _score_row(row: dict[str, Any]) -> tuple[int, str]:
     )
 
 
+# Friendly labels for the six monthly features fed into the linear risk model
+_FEATURE_LABELS: dict[str, str] = {
+    "m__monthly_import": "Monthly Import Volume",
+    "m__monthly_import_zscore_6": "Import Z-score (6-mo)",
+    "m__monthly_import_yoy_pct": "Import YoY Change",
+    "m__monthly_import_mom_pct": "Import MoM Change",
+    "m__monthly_import_roll3_std": "Import Volatility (3-mo std)",
+    "m__price_index_value": "Price Index",
+}
+
+
+def _compute_risk_breakdown(row: dict[str, Any]) -> dict[str, Any] | None:
+    """Exact per-feature contributions for the linear monthly model.
+
+    Works because ``rf_month`` is a StandardScaler + LinearRegression pipeline, so
+    ``contribution_i = coef_i * (x_i - mean_i) / scale_i`` and contributions sum
+    exactly to ``monthly_pred - intercept``.
+
+    Returns ``None`` if the bundle isn't loaded or its shape is unexpected.
+    """
+    bundle = _get_regression_bundle()
+    if bundle is None:
+        return None
+    try:
+        pipe = bundle["rf_month"]
+        scaler = pipe.named_steps.get("scaler") if hasattr(pipe, "named_steps") else None
+        lr = pipe.named_steps.get("lr") if hasattr(pipe, "named_steps") else None
+        if scaler is None or lr is None or not hasattr(lr, "coef_"):
+            return None
+
+        m_names: list[str] = bundle["m_feature_names"]
+        imp_stats = bundle["imputer_month"].statistics_
+        raw_vals = [_safe_float(row.get(_M_COL_MAP.get(n, n))) for n in m_names]
+
+        contributions: list[dict[str, Any]] = []
+        for i, name in enumerate(m_names):
+            raw = raw_vals[i]
+            imputed = raw is None or (isinstance(raw, float) and math.isnan(raw))
+            used = float(imp_stats[i]) if imputed else float(raw)
+            scaled = (used - float(scaler.mean_[i])) / float(scaler.scale_[i])
+            contrib = float(lr.coef_[i]) * scaled
+            contributions.append({
+                "feature": name.replace("m__", ""),
+                "label": _FEATURE_LABELS.get(name, name),
+                "value": None if imputed else used,
+                "imputed": imputed,
+                "contribution": round(contrib, 3),
+            })
+
+        baseline = float(lr.intercept_)
+        monthly_pred = baseline + sum(c["contribution"] for c in contributions)
+        score, level = _score_row(row)
+        daily_adjustment = round(score - monthly_pred, 3)
+
+        return {
+            "baseline": round(baseline, 3),
+            "monthlyPrediction": round(monthly_pred, 3),
+            "dailyAdjustment": daily_adjustment,
+            "finalScore": score,
+            "level": level,
+            "contributions": sorted(contributions, key=lambda c: abs(c["contribution"]), reverse=True),
+        }
+    except Exception:
+        return None
+
+
 def _trend_from_scores(current: int, older: int | None) -> str:
     if older is None:
         return "stable"
@@ -662,12 +728,15 @@ def build_dashboard_payload() -> dict[str, Any]:
         }
     )
 
+    risk_breakdown = _compute_risk_breakdown(months[-1]) if months else None
+
     overview = [
         {
             "key": "risk",
             "label": "Supply Health Index",
             "value": overall_level,
             "subtext": overall_sub,
+            "breakdown": risk_breakdown,
         },
         {
             "key": "products",

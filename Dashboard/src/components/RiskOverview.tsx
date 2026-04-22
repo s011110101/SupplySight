@@ -1,6 +1,7 @@
-import { Link } from 'react-router';
+import { useState } from 'react';
 import { AlertTriangle, Package, Map, TrendingUp, TrendingDown, CheckCircle } from 'lucide-react';
 import type { OverviewMetricDTO } from '../types/dashboard';
+import { RiskBreakdownModal } from './RiskBreakdownModal';
 
 function shiStatusLabel(value: string): string {
   const shi = parseFloat(value);
@@ -71,6 +72,8 @@ interface RiskOverviewProps {
 }
 
 export function RiskOverview({ metrics, anomalies, loading }: RiskOverviewProps) {
+  const [breakdownOpen, setBreakdownOpen] = useState(false);
+
   if (loading) {
     return (
       <div className="grid grid-cols-3 gap-4">
@@ -97,6 +100,7 @@ export function RiskOverview({ metrics, anomalies, loading }: RiskOverviewProps)
   const anomalyEntries = Object.entries(anomalies ?? {}).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
   const { color: aColor, bgColor: aBg, borderColor: aBorder } = anomalyCardStyles(anomalyEntries);
   const [topKey, topZ] = anomalyEntries[0] ?? [null, null];
+  const riskBreakdown = metrics.find((m) => m.key === 'risk')?.breakdown ?? null;
 
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -109,7 +113,7 @@ export function RiskOverview({ metrics, anomalies, loading }: RiskOverviewProps)
                 <Icon className={`w-5 h-5 ${color}`} />
               </div>
               {metric.key === 'risk' && (
-                <span className="text-xs text-slate-400 font-medium">View metric ›</span>
+                <span className="text-xs text-slate-400 font-medium">View breakdown ›</span>
               )}
             </div>
             <div className="space-y-1">
@@ -127,13 +131,14 @@ export function RiskOverview({ metrics, anomalies, loading }: RiskOverviewProps)
 
         if (metric.key === 'risk') {
           return (
-            <Link
+            <button
               key={metric.key}
-              to="/rules"
-              className={`bg-white border ${borderColor} rounded-lg p-5 block hover:shadow-md transition-shadow cursor-pointer`}
+              type="button"
+              onClick={() => setBreakdownOpen(true)}
+              className={`bg-white border ${borderColor} rounded-lg p-5 block hover:shadow-md transition-shadow cursor-pointer text-left w-full`}
             >
               {inner}
-            </Link>
+            </button>
           );
         }
 
@@ -176,6 +181,13 @@ export function RiskOverview({ metrics, anomalies, loading }: RiskOverviewProps)
           )}
         </div>
       </div>
+
+      {breakdownOpen && (
+        <RiskBreakdownModal
+          breakdown={riskBreakdown}
+          onClose={() => setBreakdownOpen(false)}
+        />
+      )}
     </div>
   );
 }

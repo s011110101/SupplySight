@@ -49,20 +49,18 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-slate-900 mb-1">Dashboard</h1>
-          <p className="text-slate-600">Monitor and forecast supply chain risks</p>
+      <div>
+        <h1 className="text-2xl font-medium text-slate-900 mb-1">Dashboard</h1>
+        <p className="text-slate-600">Monitor and forecast supply chain risks. First, select a product:</p>
 
-          {error && (
-            <div className="mt-3 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {error}
-            </div>
-          )}
-        </div>
+        {error && (
+          <div className="mt-3 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {error}
+          </div>
+        )}
 
         {/* Product selector */}
-        <div className="relative mt-1">
+        <div className="relative mt-4 inline-block">
           <button
             onClick={() => setSelectorOpen((o) => !o)}
             className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm"
@@ -75,7 +73,7 @@ export function Dashboard() {
           </button>
 
           {selectorOpen && products.length > 0 && (
-            <div className="absolute right-0 mt-1 w-64 bg-white border rounded-lg shadow-lg z-20">
+            <div className="absolute left-0 mt-1 w-64 bg-white border rounded-lg shadow-lg z-20">
               {products.map((p) => (
                 <button
                   key={p.id}

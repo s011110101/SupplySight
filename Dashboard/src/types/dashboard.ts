@@ -24,11 +24,29 @@ export interface DashboardProductRow {
   risk90: ProductRiskHorizon;
 }
 
+export interface RiskContributionDTO {
+  feature: string;
+  label: string;
+  value: number | null;
+  imputed: boolean;
+  contribution: number;
+}
+
+export interface RiskBreakdownDTO {
+  baseline: number;
+  monthlyPrediction: number;
+  dailyAdjustment: number;
+  finalScore: number;
+  level: string;
+  contributions: RiskContributionDTO[];
+}
+
 export interface OverviewMetricDTO {
   key: string;
   label: string;
   value: string;
   subtext: string;
+  breakdown?: RiskBreakdownDTO | null;
 }
 
 export interface TrendPointDTO {
