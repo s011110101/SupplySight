@@ -30,4 +30,5 @@ Dashboard/.vite/
 frontend/node_modules/
 frontend/
 
-
+## Trained models (keep manifest optional; ignore heavy artifacts)
+#models/*.joblib
