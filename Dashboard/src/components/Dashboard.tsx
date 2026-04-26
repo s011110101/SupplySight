@@ -38,8 +38,7 @@ export function Dashboard() {
 
     setSimpleLoading(true);
 
-    const API_BASE = "https://supplysight-wme1.onrender.com";
-fetch(`${API_BASE}/api/monthly?product=${p}`)
+fetch("/api/dashboard")
     .then(res => res.json())
       .then(res => {
         setSimpleData(res);

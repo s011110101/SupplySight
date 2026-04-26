@@ -925,5 +925,37 @@ def _fetch_anomalies(conn) -> dict[str, float]:
 
     return res
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+
+frontend_path = Path(__file__).resolve().parents[2] / "Dashboard" / "build"
+app.mount(
+    "/assets",
+    StaticFiles(directory=frontend_path / "assets"),
+    name="assets"
+)
+@app.get("/")
+def serve_root():
+    return FileResponse(frontend_path / "index.html")
+
+from fastapi import HTTPException
+
+@app.get("/{full_path:path}")
+def serve_react_app(full_path: str):
+
+    if full_path.startswith("api"):
+        raise HTTPException(status_code=404)
+
+    if full_path.startswith("assets"):
+        raise HTTPException(status_code=404)
+
+    file_path = frontend_path / full_path
+
+    if file_path.exists():
+        return FileResponse(file_path)
+
+    return FileResponse(frontend_path / "index.html")
+
 # Run: uvicorn services.api.main:app --reload --host 0.0.0.0 --port 8000
 # (from repo root, ensure PYTHONPATH includes repo root or use `python -m uvicorn ...`)
