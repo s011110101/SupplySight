@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-const API_BASE = "https://supplysight-wme1.onrender.com";
 export function Database() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -12,8 +11,8 @@ export function Database() {
 
 const url =
   mode === "monthly"
-    ? `${API_BASE}/api/raw?product=${product}`
-    : `${API_BASE}/api/raw-daily`;
+    ? `/api/raw?product=${product}`
+    : `/api/raw-daily`;
 
     console.log("FETCHING:", url);
 

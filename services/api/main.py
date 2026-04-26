@@ -925,5 +925,26 @@ def _fetch_anomalies(conn) -> dict[str, float]:
 
     return res
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+
+frontend_path = Path(__file__).resolve().parents[2] / "Dashboard" / "build"
+
+# static assets (JS, CSS)
+app.mount("/assets", StaticFiles(directory=frontend_path / "assets"), name="assets")
+
+@app.get("/{full_path:path}")
+def serve_react_app(full_path: str):
+    # 🔥 API 요청은 제외
+    if full_path.startswith("api"):
+        raise HTTPException(status_code=404, detail="API route not found")
+
+    index_file = frontend_path / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+
+    return {"error": "Frontend not built"}
+
 # Run: uvicorn services.api.main:app --reload --host 0.0.0.0 --port 8000
 # (from repo root, ensure PYTHONPATH includes repo root or use `python -m uvicorn ...`)
