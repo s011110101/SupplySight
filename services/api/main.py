@@ -929,10 +929,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
 
-frontend_path = Path(...)
-
-app.mount("/assets", StaticFiles(...), name="assets")
-
+frontend_path = Path(__file__).resolve().parents[2] / "Dashboard" / "build"
+app.mount(
+    "/assets",
+    StaticFiles(directory=frontend_path / "assets"),
+    name="assets"
+)
 @app.get("/")
 def serve_root():
     return FileResponse(frontend_path / "index.html")
