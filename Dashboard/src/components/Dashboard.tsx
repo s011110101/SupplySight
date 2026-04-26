@@ -38,8 +38,9 @@ export function Dashboard() {
 
     setSimpleLoading(true);
 
-    fetch(`http://127.0.0.1:8000/api/monthly?product=${p}`)
-      .then(res => res.json())
+    const API_BASE = "https://supplysight-wme1.onrender.com";
+fetch(`${API_BASE}/api/monthly?product=${p}`)
+    .then(res => res.json())
       .then(res => {
         setSimpleData(res);
         setSimpleLoading(false);
