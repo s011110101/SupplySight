@@ -37,8 +37,7 @@ export function Dashboard() {
     const p = productName.split(" ")[0];
 
     setSimpleLoading(true);
-
-fetch("/api/dashboard")
+    fetch(`/api/monthly?product=${p}`)
     .then(res => res.json())
       .then(res => {
         setSimpleData(res);
