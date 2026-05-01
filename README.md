@@ -135,3 +135,7 @@ Open **http://localhost:3000** in your browser.
     - sea_level_height_msl (float .2f)
 4. news
     tbc
+
+It should look something like this
+<img width="1360" height="782" alt="Screen Shot 2026-04-30 at 11 32 51 PM" src="https://github.com/user-attachments/assets/5ff65b84-7a2a-4887-aa94-67c7cc709121" />
+
