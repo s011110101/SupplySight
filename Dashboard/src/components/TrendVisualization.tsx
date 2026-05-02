@@ -99,7 +99,7 @@ function PinnedTooltip({ point, onClose }: { point: PinnedPoint; onClose: () => 
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 leading-none">✕</button>
         </div>
         <p className="font-medium text-slate-800">
-          {point.value.toFixed(1)} — {shiLabel(point.value)}
+          {point.value.toFixed(1)} ({shiLabel(point.value)})
         </p>
         {alert && (
           <a
@@ -113,7 +113,6 @@ function PinnedTooltip({ point, onClose }: { point: PinnedPoint; onClose: () => 
           </a>
         )}
       </div>
-      {/* Arrow */}
       <div
         style={{
           position: 'absolute',
@@ -137,7 +136,7 @@ function HoverTooltip({ active, payload, label }: any) {
   return (
     <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', padding: '8px 12px' }}>
       <p className="text-slate-500 mb-1">{label}</p>
-      <p className="font-medium text-slate-800">{value?.toFixed(1)} — {shiLabel(value)}</p>
+      <p className="font-medium text-slate-800">{value?.toFixed(1)} ({shiLabel(value)})</p>
       {alertForDate(label) && (
         <p className="text-red-500 text-xs mt-1">⚠ Click to see alert info</p>
       )}
@@ -179,9 +178,7 @@ export function TrendVisualization({ points, loading, showHealthIndex = true }: 
 
   const forecastData = FORECAST.map(({ date, risk }, i) => ({
     date,
-    // solid line carries 2026-03 and 2026-04; 2026-05 is dashed-only
     risk: i < FORECAST.length - 2 ? risk : undefined,
-    // dashed line carries the last two forecast points (overlap at 2026-04)
     riskDashed: i >= FORECAST.length - 3 ? risk : undefined,
     imports: undefined as number | undefined,
     price: undefined as number | undefined,

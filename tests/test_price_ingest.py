@@ -32,7 +32,7 @@ Feb-90,68.1,53.4,43.1,80.1,83.2,56.1
     assert df.loc[0, "source"] == "FAO_FishPriceIndex"
 
 
-def test_extract_shrimp_series_raises_for_missing_columns(tmp_path):
+def test_extract_shrimp_series_missing_columns(tmp_path):
     csv_path = tmp_path / "bad_fao.csv"
     csv_path.write_text(
         """FAO Fish Price Index,,,,,,
@@ -66,7 +66,7 @@ def test_clean_deduplicates_by_date():
     assert list(out["value"]) == [2, 3]
 
 
-def test_parse_csv_links_uses_passed_directory_url():
+def test_parse_csv_links_uses_dir_url():
     html = """
     <html><body>
       <table>
@@ -81,7 +81,7 @@ def test_parse_csv_links_uses_passed_directory_url():
     assert links[0]["url"] == "https://example.com/custom-dir/FAO_fish_price_index_Jan2026.csv"
 
 
-def test_find_newest_fao_csv_prefers_latest_parsed_timestamp(monkeypatch):
+def test_find_newest_fao_csv_picks_latest(monkeypatch):
     html = """
     <html><body><table>
       <tr><td><a href="FAO_fish_price_index_Feb2026.csv">Feb</a></td><td>10 KB</td><td>2026-02-15 09:00</td></tr>
@@ -99,7 +99,7 @@ def test_find_newest_fao_csv_prefers_latest_parsed_timestamp(monkeypatch):
     assert url == "https://example.com/fao/FAO_fish_price_index_Feb2026.csv"
 
 
-def test_find_newest_fao_csv_falls_back_to_filename_period(monkeypatch):
+def test_find_newest_fao_csv_falls_back_to_filename(monkeypatch):
     html = """
     <html><body><table>
       <tr><td><a href="FAO_fish_price_index_Dec2025.csv">Dec</a></td><td>10 KB</td><td></td></tr>

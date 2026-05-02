@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 import re
 from datetime import datetime, timezone
@@ -124,16 +122,13 @@ def parse_csv_links(html: str, dir_url: str) -> list[dict]:
 def find_newest_fao_csv(dir_url: str) -> tuple[str, str]:
     links = parse_csv_links(fetch_directory_listing(dir_url), dir_url)
     if not links:
-        raise FAOError(
-            f"No CSV files found in FAO directory: {dir_url}\n"
-            "Check FAO_FISHPRICEINDEX_DIR_URL environment variable."
-        )
+        raise FAOError(f"No CSV files found in FAO directory: {dir_url}")
 
     candidates = [
         link for link in links if "fish" in link["name"].lower() and "price" in link["name"].lower()
     ]
     if not candidates:
-        raise FAOError(f"No FAO Fish Price Index files found. Found files: {[l['name'] for l in links]}")
+        raise FAOError(f"No FAO Fish Price Index files found in {dir_url}")
 
     newest = max(
         candidates,
@@ -255,8 +250,6 @@ def run(override_url: Optional[str] = None) -> dict:
 
 if __name__ == "__main__":
     result = run()
-    print("\n" + "=" * 60)
-    print("Ingestion Complete")
-    print("=" * 60)
+    print("\nIngestion complete:")
     for key, value in result.items():
-        print(f"{key}: {value}")
+        print(f"  {key}: {value}")

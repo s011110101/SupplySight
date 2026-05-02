@@ -38,7 +38,6 @@ import requests
 
 load_dotenv()
 
-# --- ML model (supply_risk_regression.joblib) ----------------------------------------
 _MODEL_DIR = Path(__file__).resolve().parents[2] / "models"
 _REGRESSION_BUNDLE: dict[str, Any] | None = None
 _BUNDLE_ERROR: str | None = None
@@ -46,14 +45,12 @@ _BUNDLE_LOADED: bool = False
 
 
 def _get_regression_bundle() -> dict[str, Any] | None:
-    """Lazy-load and cache the regression bundle on first call."""
     global _REGRESSION_BUNDLE, _BUNDLE_ERROR, _BUNDLE_LOADED
     if _BUNDLE_LOADED:
         return _REGRESSION_BUNDLE
     _BUNDLE_LOADED = True
     try:
         _REGRESSION_BUNDLE = joblib.load(_MODEL_DIR / "supply_risk_regression.joblib")
-        # Inject created_utc from the manifest JSON if the bundle doesn't carry it
         if _REGRESSION_BUNDLE.get("created_utc") is None:
             _manifest = _MODEL_DIR / "supply_risk_manifest.json"
             if _manifest.is_file():
@@ -61,11 +58,10 @@ def _get_regression_bundle() -> dict[str, Any] | None:
                 with _manifest.open() as _f:
                     _m = _json.load(_f)
                 _REGRESSION_BUNDLE["created_utc"] = _m.get("created_utc")
-    except Exception as exc:  # pragma: no cover
+    except Exception as exc:
         _BUNDLE_ERROR = str(exc)
     return _REGRESSION_BUNDLE
 
-# -------------------------------------------------------------------------------------
 
 app = FastAPI(title="SupplySight Dashboard API", version="0.1.0")
 
@@ -207,7 +203,6 @@ def _score_to_level(score: int) -> str:
     return "Low"
 
 
-# Maps bundle m_feature_names → months_shrimp DB column names
 _M_COL_MAP: dict[str, str] = {
     "m__monthly_import": "monthly_import",
     "m__monthly_import_zscore_6": "monthly_import_zscore_6",
@@ -219,7 +214,6 @@ _M_COL_MAP: dict[str, str] = {
 
 
 def _model_predict_score(row: dict[str, Any]) -> tuple[int, str] | None:
-    """Score a months_shrimp row with the regression bundle. Returns None on any failure."""
     bundle = _get_regression_bundle()
     if bundle is None:
         return None
@@ -233,13 +227,11 @@ def _model_predict_score(row: dict[str, Any]) -> tuple[int, str] | None:
         d_names: list[str] = bundle["d_feature_names"]
         nm, nd = len(m_names), len(d_names)
         m_vals = [_safe_float(row.get(_M_COL_MAP.get(n, n))) for n in m_names]
-        X_full = np.array([m_vals + [float("nan")] * nd], dtype=float)
-        # Pass a named DataFrame so the imputer (fitted with feature names) doesn't warn
-        Xm_df = pd.DataFrame(X_full[:, :nm], columns=m_names)
+        X = np.array([m_vals + [float("nan")] * nd], dtype=float)
+        Xm_df = pd.DataFrame(X[:, :nm], columns=m_names)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
             Xm = bundle["imputer_month"].transform(Xm_df)
-        X = X_full  # keep full array for d_block slice below
         monthly_risk = float(bundle["rf_month"].predict(Xm)[0])
         dc = float(bundle.get("delta_clip", 15.0))
         if bundle.get("architecture") == "monthly_plus_formula_adjustment":
@@ -261,7 +253,6 @@ def _model_predict_score(row: dict[str, Any]) -> tuple[int, str] | None:
 
 
 def _score_row(row: dict[str, Any]) -> tuple[int, str]:
-    """Score a months_shrimp row: ML model when available, else heuristic fallback."""
     result = _model_predict_score(row)
     if result is not None:
         return result
@@ -571,7 +562,6 @@ def _overall_risk_label(months: list[dict[str, Any]]) -> tuple[str, str]:
 
 
 def _build_recommendations(months: list[dict[str, Any]], as_of: str | None) -> list[dict[str, Any]]:
-    """Generate actionable recommendations from real risk signals — always returns at least one item."""
     if not months:
         return []
 
@@ -644,7 +634,7 @@ def _build_recommendations(months: list[dict[str, Any]], as_of: str | None) -> l
                 "description": (
                     f"Risk is Medium (Supply Health Index: {(100 - score) / 10:.1f}/10)"
                     + (f" with imports {'+' if mom_pct >= 0 else ''}{mom_pct:.1f}% vs last month" if mom_pct is not None else "")
-                    + ". No action required — continue monitoring weekly."
+                    + ". No action required. Continue monitoring weekly."
                 ),
                 "priority": "Medium",
                 "savings": "No change needed",
@@ -708,7 +698,6 @@ def build_dashboard_payload() -> dict[str, Any]:
             }
         )
 
-    # 30/60/90 day risk: rolling windows of monthly history as proxy
     products: list[dict[str, Any]] = []
     last3 = months[-3:]
     last6 = months[-6:]

@@ -3,46 +3,46 @@ import { Shield, Brain, Database, TrendingDown, DollarSign, BarChart3, Droplets 
 const SHI_BANDS = [
   {
     label: 'Critical',
-    range: '0.0 – 2.5',
+    range: '0.0 to 2.5',
     color: 'text-red-700',
     bg: 'bg-red-50',
     border: 'border-red-200',
-    description: 'Acute supply disruption risk. Place emergency order and contact backup suppliers immediately.',
+    description: 'High disruption risk. Place an emergency order and find backup suppliers.',
   },
   {
     label: 'At Risk',
-    range: '2.6 – 5.0',
+    range: '2.6 to 5.0',
     color: 'text-orange-700',
     bg: 'bg-orange-50',
     border: 'border-orange-200',
-    description: 'Significant supply pressure. Increase order quantity before next procurement cycle.',
+    description: 'Supply is tight. Order more before the next cycle.',
   },
   {
     label: 'Moderate',
-    range: '5.1 – 7.5',
+    range: '5.1 to 7.5',
     color: 'text-yellow-700',
     bg: 'bg-yellow-50',
     border: 'border-yellow-200',
-    description: 'Mild stress signals detected. Monitor weekly; consider ordering slightly early.',
+    description: 'Some stress in the data. Check weekly and order a bit early if it gets worse.',
   },
   {
     label: 'Healthy',
-    range: '7.6 – 10.0',
+    range: '7.6 to 10.0',
     color: 'text-green-700',
     bg: 'bg-green-50',
     border: 'border-green-200',
-    description: 'Supply conditions stable. No action required.',
+    description: 'Supply is stable. No action needed.',
   },
 ];
 
 const FEATURES = [
-  { icon: TrendingDown, label: 'Monthly import volume', detail: 'Total US shrimp imports (HS 030616 + 030617) from the Census Bureau — the primary supply signal. Lower volumes push the Supply Health Index down.' },
-  { icon: BarChart3, label: '6-month import z-score', detail: 'How many standard deviations current volume is above or below the 6-month rolling mean. Negative z-scores are the strongest downward driver of the Supply Health Index.' },
-  { icon: BarChart3, label: '3-month import std dev', detail: 'Rolling volatility of import volumes. Higher volatility increases uncertainty and lowers the Supply Health Index.' },
-  { icon: TrendingDown, label: 'Month-over-month change', detail: 'Percentage change in imports from the prior month. Sharp drops compound the shortage signal and reduce the index.' },
-  { icon: TrendingDown, label: 'Year-over-year change', detail: 'Long-run import trend; used for seasonal baseline correction.' },
-  { icon: DollarSign, label: 'FAO price index', detail: 'FAO shrimp price index value. Elevated prices (above the training median of ~80) signal supply tightness and lower the Supply Health Index.' },
-  { icon: Droplets, label: 'Oil price (daily adjustment)', detail: 'Brent crude oil price used in the formula adjustment. High oil raises shipping costs and can shift the index by up to ±1.5 points.' },
+  { icon: TrendingDown, label: 'Monthly import volume', detail: 'Total US shrimp imports (HS 030616 + 030617) from the Census Bureau. Lower volumes lower the index.' },
+  { icon: BarChart3, label: '6-month import z-score', detail: 'How many standard deviations current volume is above or below the 6-month mean. Negative z-scores lower the index the most.' },
+  { icon: BarChart3, label: '3-month import std dev', detail: 'Rolling volatility of import volumes. Higher volatility lowers the index.' },
+  { icon: TrendingDown, label: 'Month-over-month change', detail: 'Percentage change in imports vs. last month. Sharp drops lower the index further.' },
+  { icon: TrendingDown, label: 'Year-over-year change', detail: 'Long-run import trend, used for seasonal correction.' },
+  { icon: DollarSign, label: 'FAO price index', detail: 'FAO shrimp price index value. High prices (above the training median around 80) lower the index.' },
+  { icon: Droplets, label: 'Oil price (daily adjustment)', detail: 'Brent crude oil price used in the formula adjustment. Higher oil raises shipping costs and can shift the index by up to 1.5 points.' },
 ];
 
 const RULES = [
@@ -50,7 +50,7 @@ const RULES = [
     id: 1,
     icon: Shield,
     name: 'At Risk Threshold',
-    description: 'Supply Health Index ≤ 5.0 triggers an At Risk alert. Recommendation: increase order quantity before the next procurement cycle.',
+    description: 'Index ≤ 5.0 triggers an At Risk alert. Order more before the next cycle.',
     category: 'Model Rule',
     status: 'Active',
   },
@@ -58,7 +58,7 @@ const RULES = [
     id: 2,
     icon: Shield,
     name: 'Critical Threshold',
-    description: 'Supply Health Index ≤ 2.5 triggers a Critical alert. Recommendation: place an emergency order and contact backup suppliers within 2 days.',
+    description: 'Index ≤ 2.5 triggers a Critical alert. Place an emergency order and contact backup suppliers within 2 days.',
     category: 'Model Rule',
     status: 'Active',
   },
@@ -66,7 +66,7 @@ const RULES = [
     id: 3,
     icon: Shield,
     name: 'Negative z-score signal',
-    description: 'Import volume below the 6-month average (z-score < 0) is the strongest single predictor of supply stress and the primary driver pushing the Supply Health Index down.',
+    description: 'Import volume below the 6-month average (z-score < 0) is the strongest predictor of supply stress and the main driver pushing the index down.',
     category: 'Feature Rule',
     status: 'Active',
   },
@@ -74,7 +74,7 @@ const RULES = [
     id: 4,
     icon: Shield,
     name: 'Price stress signal',
-    description: 'When the FAO shrimp price index exceeds the training median (~80), the excess signals supply tightness and contributes to a lower Supply Health Index.',
+    description: 'When the FAO shrimp price index goes above the training median (around 80), the excess pushes the index down.',
     category: 'Feature Rule',
     status: 'Active',
   },
@@ -83,14 +83,11 @@ const RULES = [
 export function Rules() {
   return (
     <div className="space-y-8">
-
-      {/* Header */}
       <div>
         <h1 className="text-slate-900 mb-1">Metrics</h1>
         <p className="text-slate-600">How SupplySight calculates the Supply Health Index for shrimp</p>
       </div>
 
-      {/* Model explainer card */}
       <div className="bg-white border border-blue-200 rounded-xl p-6 space-y-5">
         <div className="flex items-center gap-3">
           <div className="bg-blue-50 p-2.5 rounded-lg">
@@ -103,13 +100,13 @@ export function Rules() {
         </div>
 
         <p className="text-slate-600 text-sm leading-relaxed">
-          Every month, the model receives the latest US shrimp import data and the FAO price index,
-          then computes a <strong>Supply Health Index (0 – 10)</strong> — where <strong>10 is fully healthy</strong> and <strong>0 indicates acute supply disruption risk</strong>.
-          The index is derived from a linear regression head with a small deterministic <strong>formula adjustment</strong> driven by oil price
-          (a proxy for shipping costs). The final value determines the health band shown on the dashboard.
+          Every month, the model uses the latest US shrimp import data and the FAO price index to compute a
+          {' '}<strong>Supply Health Index from 0 to 10</strong>. <strong>10 is fully healthy</strong> and
+          {' '}<strong>0 indicates high supply disruption risk</strong>. The index comes from a linear regression
+          head with a small deterministic <strong>formula adjustment</strong> driven by oil price. The final
+          value sets the health band shown on the dashboard.
         </p>
 
-        {/* SHI bands */}
         <div>
           <h3 className="text-slate-800 font-medium text-sm mb-3">Supply Health Index bands</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -125,7 +122,6 @@ export function Rules() {
           </div>
         </div>
 
-        {/* Features */}
         <div>
           <h3 className="text-slate-800 font-medium text-sm mb-3">Input features</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -141,21 +137,19 @@ export function Rules() {
           </div>
         </div>
 
-        {/* Data sources */}
         <div className="flex items-start gap-3 bg-slate-50 border border-slate-100 rounded-lg p-4">
           <Database className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
           <div>
             <p className="text-slate-800 text-xs font-semibold mb-0.5">Data sources</p>
             <p className="text-slate-500 text-xs leading-relaxed">
-              <strong>US Census Bureau</strong> – monthly international trade imports (HS codes 030616 &amp; 030617, frozen shrimp/prawns).<br />
-              <strong>FAO</strong> – Fish Price Index (shrimp component), monthly.<br />
-              <strong>Brent crude oil</strong> – daily spot price used for the formula adjustment.
+              <strong>US Census Bureau</strong>: monthly international trade imports (HS codes 030616 &amp; 030617, frozen shrimp/prawns).<br />
+              <strong>FAO</strong>: Fish Price Index (shrimp component), monthly.<br />
+              <strong>Brent crude oil</strong>: daily spot price used for the formula adjustment.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Alert rules */}
       <div>
         <h2 className="text-slate-900 font-semibold mb-4">Alert Rules</h2>
         <div className="grid grid-cols-1 gap-4">
